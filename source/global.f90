@@ -6,10 +6,11 @@ integer, parameter :: dp = selected_real_kind(15, 307), &
                       int64 = selected_int_kind(18)
 real(dp), parameter :: zero = 0.0_dp, &
                        kB = 8.6173332620e-2, & 
-                       amuang_to_kglt = 1.660539066, &
-                       evang_to_bar = 1.6021766208e3
-integer :: nPart
-real(dp) :: mass, e0, sigma, frcut
+                       amuangs_to_kglt = 1.660539066, &
+                       mevangs_to_bar = 1.6021766208e3
+integer :: npart
+real(dp) :: mass, e0, sigma, frcut, xvar, vvar
+
 ! notes:
 ! kB in eV K is 8.6173303e-5
 !
