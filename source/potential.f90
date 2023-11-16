@@ -39,10 +39,11 @@ function compute_poten(L, x) result(erg)
         real(dp), intent(in) :: L, x(npart,3)
         real(dp) :: erg
         integer :: i, j
-        real(dp) :: q, d2, s2, rc2, rij(3)
+        real(dp) :: q, d2, s2, rc2, rij(3), ercut
         erg = zero
         rc2 = (L*frcut)**2.0_xp
-        s2 = sigma**2.0_xp    
+        s2 = sigma**2.0_xp
+        ercut = (s2/rc2)**6.0_xp - (s2/rc2)**3.0_xp
     
         !$omp parallel do private(i,j,d2,q,rij) reduction(+:erg)
         do i=1,npart
@@ -52,7 +53,7 @@ function compute_poten(L, x) result(erg)
             d2 = dot_product(rij, rij)
             if (d2 .lt. rc2) then
                 q = (s2/d2)**3.0_xp
-                erg = erg + (q**2.0_xp - q)
+                erg = erg + (q**2.0_xp - q - ercut)
             end if
         end do
         end do
@@ -69,10 +70,11 @@ function erg_diff(i, L, x, xi_new) result(de)
     real(dp), intent(in) :: L, x(npart,3), xi_new(3)
     real(dp) :: de
     integer :: j
-    real(dp) :: q, d2, s2, rc2, rij(3)
+    real(dp) :: q, d2, s2, rc2, rij(3), ercut
     de = zero
     rc2 = (L*frcut)**2.0_xp
-    s2 = sigma**2.0_xp    
+    s2 = sigma**2.0_xp
+    ercut = (s2/rc2)**6.0_xp - (s2/rc2)**3.0_xp    
 
     !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ! substract old interactions
@@ -86,7 +88,7 @@ function erg_diff(i, L, x, xi_new) result(de)
         d2 = dot_product(rij, rij)
         if (d2 .lt. rc2) then
             q = (s2/d2)**3.0_xp
-            de = de + (q - q**2.0_xp)
+            de = de + (q - q**2.0_xp + ercut)
         end if
     end if
     end do
@@ -103,7 +105,7 @@ function erg_diff(i, L, x, xi_new) result(de)
         d2 = dot_product(rij, rij)
         if (d2 .lt. rc2) then
             q = (s2/d2)**3.0_xp
-            de = de + (q**2.0_xp - q)
+            de = de + (q**2.0_xp - q - ercut)
         end if
     end if
     end do

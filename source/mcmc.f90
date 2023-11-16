@@ -1,5 +1,5 @@
 module mcmc
-use global, only: dp, xp, zero, npart, xvar, vvar
+use global, only: dp, xp, zero, kB, npart, xvar, vvar
 use random, only: randint
 use potential, only: compute_poten, erg_diff
 implicit none
@@ -36,9 +36,10 @@ subroutine displace_move(temp, L, x, energy)
     real(dp), intent(in) :: temp, L
     real(dp), intent(inout) :: x(npart,3), energy
     integer :: i, k
-    real(dp) :: u, eold, enew, xi_old(3), xi_new(3), dx(3)
+    real(dp) :: u, eold, enew, xi_old(3), xi_new(3), dx(3), beta
 
     eold = energy
+    beta = 1.0_dp/(kB*temp)
 
     ! select random particle
     i = randint(npart) + 1
@@ -65,7 +66,7 @@ subroutine displace_move(temp, L, x, energy)
 
     ! acceptance test
     call random_number(u)
-    if (u .lt. exp((eold-enew)/temp)) then
+    if (u .lt. exp((eold-enew)*beta)) then
         energy = enew
         x(i,:) = xi_new
     end if
@@ -77,9 +78,10 @@ subroutine volstretch_move(temp, pres, L, x, energy)
     implicit none
     real(dp), intent(in) :: temp, pres
     real(dp), intent(inout) :: L, x(npart,3), energy
-    real(dp) :: u, eold, enew, v0, vn, Ln, logv
+    real(dp) :: u, eold, enew, v0, vn, Ln, logv, beta
 
     eold = energy
+    beta = 1.0_dp/(kB*temp)
 
     ! volume perturbations
     v0 = L**3.0_xp
