@@ -45,19 +45,19 @@ subroutine readin(seed, L0, temp, pres, xvar, vvar, walkers, burn, prod, snaps, 
     end subroutine readin
 
 ! read config
-subroutine readsys(nPart, mass, e0, sigma, frcut, asp)
+subroutine readsys(nPart, mass, e0, sigma, rcut, asp)
     integer, intent(out) :: nPart
-    real(dp), intent(out) :: mass, e0, sigma, frcut
+    real(dp), intent(out) :: mass, e0, sigma, rcut
     character(len=*), intent(out) :: asp
     integer :: iostat
     
     ! set up namelists
-    namelist /system/  nPart, mass, e0, sigma, frcut, asp
+    namelist /system/  nPart, mass, e0, sigma, rcut, asp
     nPart = 10
     mass = 1.0 
     e0 = 1.0
     sigma = 1.0
-    frcut = 0.5
+    rcut = 3.0
     asp = 'Ar'
 
     ! read

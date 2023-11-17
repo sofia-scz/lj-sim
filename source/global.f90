@@ -4,15 +4,15 @@ integer, parameter :: dp = selected_real_kind(15, 307), &
                       xp = selected_real_kind(18, 4931), &
                       qp = selected_real_kind(33, 4931), &
                       int64 = selected_int_kind(18)
-real(dp), parameter :: zero = 0.0_dp, &
-                       kB = 8.6173332620e-2, & 
-                       amuangs_to_kglt = 1.660539066, &
-                       mevangs_to_bar = 1.6021766208e3
+real(dp), parameter :: zero = 0.0d0, &
+                       kB = 8.6173332620d-2, & 
+                       amuangs_to_kglt = 1.660539066d0, &
+                       mevangs_to_bar = 1.6021766208d3
 integer :: npart
-real(dp) :: mass, e0, sigma, frcut, xvar, vvar
+real(dp) :: mass, e0, sigma, rcut, xvar, vvar
 
 ! notes:
-! kB in eV K is 8.6173303e-5
+! kB in meV K is 8.6173303e-2 (NIST)
 !
 ! LJ params
 ! neon
@@ -21,8 +21,8 @@ real(dp) :: mass, e0, sigma, frcut, xvar, vvar
 ! mass = 20.180
 ! expected a ~ 4.46 angs
 !
-! conversion 1 amu = 1.073544e-6 meV = 1.660539066e-24 g
-! c in atomic units = 2.9979e3 angs / fs
+! conversion 1 amu = 1.660539066e-24 g (NIST)
+! c in atomic units = 2.9979e3 angs / fs  (NIST)
 ! Nav = 6.02214076e23
-! pressure    1 meV/angs^3 = 1602.1766208 bar
+! pressure    1 meV/angs^3 = 1602.1766208 bar (berkeley)
 end module global

@@ -94,8 +94,8 @@ subroutine volstretch_move(temp, pres, L, x, energy)
     enew = compute_poten(Ln, x/L*Ln)
     call random_number(u)
 
-    if (u .lt. exp(-(enew - eold + pres*(vn-v0))/temp &
-                    -(npart+1)*log(vn/v0))) then
+    if (u .lt. exp(-beta*(enew - eold + pres*(vn-v0)) & 
+                        + npart*log(vn/v0))) then
         x = x/L*Ln
         L = Ln
         energy = enew

@@ -1,7 +1,7 @@
 program main
     use global, only: dp, xp, int64, zero, & 
                       amuangs_to_kglt, mevangs_to_bar, &
-                      npart, mass, e0, sigma, frcut, &
+                      npart, mass, e0, sigma, rcut, &
                       xvar, vvar
     use random, only: init_PRNG
     use io, only: readin, readsys, str_padding
@@ -115,7 +115,7 @@ subroutine init()
     write(*,*) ''
     write(*,*) 'Reading input files...'
     call readin(seed, L, temp, pres, xvar, vvar, walkers, burn, prod, snaps, inimode)
-    call readsys(npart, mass, e0, sigma, frcut, asp)
+    call readsys(npart, mass, e0, sigma, rcut, asp)
     write(*,*) 'Success!'
 
     write(*,*) ''
@@ -133,7 +133,7 @@ subroutine init()
     write(*,'(a32, i12)') str_padding('Number of atoms',31), npart
     write(*,'(a32, f12.6)') str_padding('Lennard Jones e0 (meV)',31), e0
     write(*,'(a32, f12.6)') str_padding('Lennard Jones sigma (angs)',31), sigma
-    write(*,'(a34, f10.6)') str_padding('Cutoff radius (fraction of L)',33), frcut
+    write(*,'(a34, f10.6)') str_padding('Cutoff radius (LJ sigmas)',33), rcut
     write(*,*) ''
     write(*,'(a24, i20)') str_padding('PRNG initializing seed',23), seed
     write(*,'(a32, f12.6)') str_padding('Initial box length (angs)',31), L

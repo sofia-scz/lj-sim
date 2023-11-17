@@ -1,6 +1,6 @@
 module potential
 use global, only: dp, xp, zero, kB, &
-                  npart, sigma, e0, frcut
+                  npart, sigma, e0, rcut
 use omp_lib
 implicit none
 private
@@ -13,7 +13,7 @@ function compute_vpress(temp, L, x) result(vpress)
     integer :: i, j
     real(dp) :: q, d2, s2, rc2, rij(3), vpress
     vpress = zero
-    rc2 = (L*frcut)**2.0_xp
+    rc2 = (sigma*rcut)**2.0_xp
     s2 = sigma**2.0_xp
 
     !$omp parallel do private(i,j,d2,q,rij) reduction(+:vpress)
@@ -41,7 +41,7 @@ function compute_poten(L, x) result(erg)
         integer :: i, j
         real(dp) :: q, d2, s2, rc2, rij(3), ercut
         erg = zero
-        rc2 = (L*frcut)**2.0_xp
+        rc2 = (sigma*rcut)**2.0_xp
         s2 = sigma**2.0_xp
         ercut = (s2/rc2)**6.0_xp - (s2/rc2)**3.0_xp
     
@@ -72,7 +72,7 @@ function erg_diff(i, L, x, xi_new) result(de)
     integer :: j
     real(dp) :: q, d2, s2, rc2, rij(3), ercut
     de = zero
-    rc2 = (L*frcut)**2.0_xp
+    rc2 = (sigma*rcut)**2.0_xp
     s2 = sigma**2.0_xp
     ercut = (s2/rc2)**6.0_xp - (s2/rc2)**3.0_xp    
 
