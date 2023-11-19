@@ -12,8 +12,8 @@ program main
 
     real(dp), allocatable :: x(:,:)
     real(dp) :: L, temp, pres, t0, tf, energy, & 
-                    volume, density, vpress
-    integer :: i, n, walkers, burn, prod, snaps, apos, avol
+                    volume, density, vpress, xtry, vtry, xacc, vacc
+    integer :: i, n, burn, prod, snaps
     integer(int64) :: seed
     character(len=2) :: asp, dummy
     character(len=10) :: inimode
@@ -39,7 +39,7 @@ program main
     call flush()
 
     do n=1,burn
-        call NpT_step(temp, pres, L, x, energy, apos, avol)
+        call NpT_step(temp, pres, L, x, energy, xtry, vtry, xacc, vacc)
 
         ! if (mod(n-mod(burn,int(burn/100)),int(burn/100)).eq.0) then
         !     write(*,*) 
@@ -56,17 +56,17 @@ program main
     write(*,*) 'Starting production...'
 
     open(file='table.out', unit=236)
-    write(236,'(6a16)') 'Energy', 'BoxLength', 'Density', 'VirialPress', &
-                            'PosMoves', 'VolMoves'
+    write(236,'(a86)') 'Energy        BoxLength        Density      '&
+                                &'      VirPress        XACR        VACR'
     open(unit=145, file='snapshots.out')
 
     do n=1,prod
-        call NpT_step(temp, pres, L, x, energy, apos, avol)
+        call NpT_step(temp, pres, L, x, energy, xtry, vtry, xacc, vacc)
         volume = L**3.0_xp
         density = npart/volume*amuangs_to_kglt*mass
         vpress = compute_vpress(temp, L, x)*mevangs_to_bar
-        write(236,'(e14.8,a2,f14.8,a2,f14.8,a2,e14.8,a2,i14,a2,i14)') &
-            energy/npart, '', L, '',  density, '',  vpress, '', apos, '', avol
+        write(236,'(e12.6,a2,e14.6,a2,e14.6,a6,e14.6,a2,f10.6,a2,f10.6)') &
+            energy/npart, '', L, '',  density, '',  vpress, '', xacc/xtry, '', vacc/vtry
 
         ! write snapshots
         if (mod(n-mod(prod,int(prod/snaps)),int(prod/snaps)).eq.0) then
@@ -114,7 +114,7 @@ subroutine init()
 
     write(*,*) ''
     write(*,*) 'Reading input files...'
-    call readin(seed, L, temp, pres, xvar, vvar, walkers, burn, prod, snaps, inimode)
+    call readin(seed, L, temp, pres, xvar, vvar, burn, prod, snaps, inimode)
     call readsys(npart, mass, e0, sigma, rcut, asp)
     write(*,*) 'Success!'
 
@@ -140,7 +140,6 @@ subroutine init()
     write(*,'(a32, f12.6)') str_padding('Temperature (kelvin)',31), temp
     write(*,'(a32, e12.6)') str_padding('Pressure (bar)',31), pres
     write(*,*) ''
-    write(*,'(a32, i12)') str_padding('MCMC walkers',31), walkers
     write(*,'(a32, i12)') str_padding('MCMC burn in steps',31), burn
     write(*,'(a32, i12)') str_padding('MCMC production steps',31), prod
     write(*,'(a22, i12, a10)') str_padding('Saving ',21), snaps, str_padding('snapshots',9)
@@ -157,6 +156,10 @@ subroutine setup_vars()
     write(*,*) 'Success!'
     write(*,*) ''
     pres = pres/mevangs_to_bar ! convert bar to meV/angs^3
+    xacc = 0
+    vacc = 0
+    xtry = 1
+    vtry = 1
 
     if (trim(inimode)=='resume') then
         write(*,'(a50)') str_padding('Reading initial positions from ' // fstate, 49)

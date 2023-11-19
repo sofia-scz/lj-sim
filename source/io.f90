@@ -6,8 +6,8 @@ public readin, readsys, str_padding
 contains
 
 ! read config
-subroutine readin(seed, L0, temp, pres, xvar, vvar, walkers, burn, prod, snaps, inimode)
-    integer, intent(out) :: walkers, burn, prod, snaps
+subroutine readin(seed, L0, temp, pres, xvar, vvar, burn, prod, snaps, inimode)
+    integer, intent(out) :: burn, prod, snaps
     integer(int64), intent(out) :: seed
     real(dp), intent(out) :: L0, temp, pres, xvar, vvar
     character(len=*), intent(out) :: inimode
@@ -15,14 +15,13 @@ subroutine readin(seed, L0, temp, pres, xvar, vvar, walkers, burn, prod, snaps, 
     
     ! set up namelists
     namelist /input/ seed, L0, temp, pres, xvar, vvar, &
-                        walkers, burn, prod, snaps, inimode
+                       burn, prod, snaps, inimode
     seed = 123456789
     L0 = 10.0
     temp = 1.0
     pres = 1.0
     xvar = 0.02
     vvar = 0.005
-    walkers = 1
     burn = 100
     prod = 100
     snaps = 30

@@ -7,39 +7,45 @@ private
 public NpT_step
 contains
 
-subroutine NpT_step(temp, pres, L, x, energy, apos, avol)
+subroutine NpT_step(temp, pres, L, x, energy, xtry, vtry, xacc, vacc)
     implicit none
     real(dp), intent(in) :: temp, pres
-    real(dp), intent(inout) :: L, x(npart,3), energy
-    integer, intent(out) :: apos, avol
+    real(dp), intent(inout) :: L, x(npart,3), energy, &
+                                xtry, vtry, xacc, vacc
+    logical :: accept
     integer :: i, ri
-
-    apos = 0
-    avol = 0
 
     do i=1,npart+1
         ri = randint(npart+1)
         if (ri.eq.0) then
-            call volstretch_move(temp, pres, L, x, energy)
-            avol = avol +1
+            vtry = vtry + 1
+            call volstretch_move(temp, pres, L, x, energy, accept)
+            if (accept) then
+                vacc = vacc + 1
+            end if
         else
-            call displace_move(temp, L, x, energy)
-            apos = apos +1
+            xtry = xtry + 1
+            call displace_move(temp, L, x, energy, accept)
+            if (accept) then
+                xacc = xacc + 1
+            end if
         end if
     end do
 
     end subroutine NpT_step
 
 ! attempt to displace 1 particle
-subroutine displace_move(temp, L, x, energy)
+subroutine displace_move(temp, L, x, energy, accept)
     implicit none
     real(dp), intent(in) :: temp, L
     real(dp), intent(inout) :: x(npart,3), energy
+    logical, intent(out) :: accept
     integer :: i, k
     real(dp) :: u, eold, enew, xi_old(3), xi_new(3), dx(3), beta
 
     eold = energy
     beta = 1.0_dp/(kB*temp)
+    accept = .false.
 
     ! select random particle
     i = randint(npart) + 1
@@ -69,19 +75,22 @@ subroutine displace_move(temp, L, x, energy)
     if (u .lt. exp((eold-enew)*beta)) then
         energy = enew
         x(i,:) = xi_new
+        accept = .true.
     end if
 
     end subroutine displace_move
 
 ! attempt to stretch the whole simulation box
-subroutine volstretch_move(temp, pres, L, x, energy)
+subroutine volstretch_move(temp, pres, L, x, energy, accept)
     implicit none
     real(dp), intent(in) :: temp, pres
     real(dp), intent(inout) :: L, x(npart,3), energy
+    logical, intent(out) :: accept
     real(dp) :: u, eold, enew, v0, vn, Ln, logv, beta
 
     eold = energy
     beta = 1.0_dp/(kB*temp)
+    accept = .false.
 
     ! volume perturbations
     v0 = L**3.0_xp
@@ -99,6 +108,7 @@ subroutine volstretch_move(temp, pres, L, x, energy)
         x = x/L*Ln
         L = Ln
         energy = enew
+        accept = .true.
     end if
 
     end subroutine volstretch_move
