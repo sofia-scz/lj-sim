@@ -51,8 +51,8 @@ write(*,*) ''
 write(*,*) 'Starting production...'
 
 open(file='table.out', unit=236)
-write(236,'(a86)') 'Energy        BoxLength        Density      '&
-                            &'      VirPress        XACR        VACR'
+write(236,'(a82)') 'Energy        BoxLength        Density    &
+                                    &    VirPress        XACR        VACR'
 open(unit=145, file='snapshots.out')
 
 do n=1,prod
@@ -60,19 +60,21 @@ do n=1,prod
     volume = L**3.0_dp
     density = npart/volume*amuangs_to_kglt*mass
     vpress = compute_vpress(temp, L, x)*mevangs_to_bar
-    write(236,'(e12.6,a2,e14.6,a2,e14.6,a6,e14.6,a2,f10.6,a2,f10.6)') &
-        energy/npart, '', L, '',  density, '',  vpress, '', xacc/xtry, '', vacc/vtry
+    write(236,'(e12.6,a2,e14.6,a2,e14.6,a2,e14.6,a2,f10.6,a2,f10.6)') &
+        energy/npart, '', L, '',  density, '',  vpress, '', xacc/xtry, &
+                                                            '', vacc/vtry
 
     ! write snapshots
     if (mod(n-mod(prod,int(prod/snaps)),int(prod/snaps)).eq.0) then
         write(145,*) npart
-        write(145,'(a10, 9f6.2, a13)') 'Lattice="', L, .0, .0, .0, L, .0, .0, .0, L, '" pbc="T T T"'
+        write(145,'(a10, 9f6.2, a13)') 'Lattice="', L, .0, .0, .0, & 
+                                            L, .0, .0, .0, L, '" pbc="T T T"'
         do i=1,npart
             write(145,'(a4, 3f16.8)') asp, x(i,:)
         end do
         call flush()
     end if
-    if (mod(n-mod(prod,int(prod/100)),int(prod/100)).eq.0) then ! force data dump every 1 per cent
+    if (mod(n-mod(prod,int(prod/100)),int(prod/100)).eq.0) then
         call flush()
     end if
 end do
@@ -83,7 +85,9 @@ tf = omp_get_wtime()
 write(*,'(a34,f12.4,a4)') str_padding('Production finished! Time spent: '&
                                     ,33), tf-t0, 'sec'
 write(*,*) ''
-write(*,*) ' ~(˘▾˘~) Execution complete (~˘▾˘)~ '
+write(*,*) '      ~(˘▾˘~) Execution completed (~˘▾˘)~       '
+write(*,*) ''
+write(*,*) ''
 write(*,*) 'Have a nice day!'
 write(*,*) ''
 
@@ -173,22 +177,5 @@ subroutine setup_vars()
     energy = compute_poten(L, x)
 
     end subroutine setup_vars
-
-! save final step
-subroutine save_fstep()
-    open(file='finalstate.out', unit=237)
-    write(237,*) ''
-    write(237,'(a32, e16.8)') str_padding('Energy',31), energy/npart
-    write(237,'(a32, f16.8)') str_padding('BoxLength',31), L
-    write(237,'(a32, f16.8)') str_padding('Density',31), density
-    write(237,'(a32, e16.8)') str_padding('VirialPress',31), vpress
-    write(237,*) ''
-    write(237,*) 'Positions'
-    write(237,*) ''
-    do i=1,npart
-        write(237,'(a4, 3f16.8)') asp, x(i,:)
-    end do
-    close(237)
-    end subroutine save_fstep
     
 end program main
