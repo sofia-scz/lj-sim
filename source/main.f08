@@ -67,8 +67,8 @@ do n=1,prod
     ! write snapshots
     if (mod(n-mod(prod,int(prod/snaps)),int(prod/snaps)).eq.0) then
         write(145,*) npart
-        write(145,'(a10, 9f6.2, a13)') 'Lattice="', L, .0, .0, .0, & 
-                                            L, .0, .0, .0, L, '" pbc="T T T"'
+        write(145,'(a10,f7.3,a13,f7.3,a13,f7.3,a13)') 'Lattice="', L, &
+                ' 0.0 0.0 0.0 ', L, ' 0.0 0.0 0.0 ', L, '" pbc="T T T"'
         do i=1,npart
             write(145,'(a4, 3f16.8)') asp, x(i,:)
         end do
