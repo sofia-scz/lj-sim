@@ -93,7 +93,7 @@ subroutine volstretch_move(temp, pres, L, x, energy, accept)
     accept = .false.
 
     ! volume perturbations
-    v0 = L**3.0_dp
+    v0 = L**3
     call random_number(u)
 
     logv = log(v0) + (u-0.5_dp)*2.0_dp*vvar

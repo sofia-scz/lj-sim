@@ -57,7 +57,7 @@ open(unit=145, file='snapshots.out')
 
 do n=1,prod
     call NpT_step(temp, pres, L, x, energy, xtry, vtry, xacc, vacc)
-    volume = L**3.0_dp
+    volume = L**3
     density = npart/volume*amuangs_to_kglt*mass
     vpress = compute_vpress(temp, L, x)*mevangs_to_bar
     write(236,'(e12.6,a2,e14.6,a2,e14.6,a2,e14.6,a2,f10.6,a2,f10.6)') &
@@ -123,7 +123,7 @@ subroutine init()
     write(*,'(a32, i4, a10)') str_padding('OMP running with',31), &
                                     omp_get_max_threads(), str_padding('threads',9)
     write(*,'(a32, f9.4, a3)') str_padding('Estimated memory usage',31), &
-                                   24.0*28.0*npart/1024.0**2.0, 'MB'
+                                   24.0*28.0*npart/1024.0**2, 'MB'
     write(*,*) ''
     write(*,'(a40, a4)') str_padding('Atomic species',39), asp
     write(*,'(a32, i12)') str_padding('Number of atoms',31), npart

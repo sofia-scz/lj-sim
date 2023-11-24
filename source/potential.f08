@@ -13,8 +13,8 @@ function compute_vpress(temp, L, x) result(vpress)
     integer :: i, j
     real(dp) :: q, d2, s2, rc2, rij(3), vpress
     vpress = zero
-    rc2 = (sigma*rcut)**2.0_dp
-    s2 = sigma**2.0_dp
+    rc2 = (sigma*rcut)**2
+    s2 = sigma**2
 
     !$omp parallel do private(i,j,d2,q,rij) schedule(static,1) reduction(+:vpress)
     do i=1,npart-1
@@ -24,13 +24,13 @@ function compute_vpress(temp, L, x) result(vpress)
         rij = rij - L*int(2.0_dp*rij/L)
         d2 = dot_product(rij, rij)
         if (d2 .lt. rc2) then
-            q = (s2/d2)*(s2/d2)*(s2/d2)
-            vpress = vpress + (2.0_dp*q*q - q)
+            q = (s2/d2)**3
+            vpress = vpress + (2.0_dp*q**2 - q)
         end if
     end do
     end do
 
-    vpress = (8.0_dp*e0*vpress + npart*temp*kB)/L**3.0_dp
+    vpress = (8.0_dp*e0*vpress + npart*temp*kB)/L**3
 
     end function compute_vpress
 
@@ -42,9 +42,9 @@ function compute_poten(L, x) result(erg)
         integer :: i, j
         real(dp) :: q, d2, s2, rc2, rij(3), ercut
         erg = zero
-        rc2 = (sigma*rcut)**2.0_dp
-        s2 = sigma**2.0_dp
-        ercut = (s2/rc2)**6.0_dp - (s2/rc2)**3.0_dp
+        rc2 = (sigma*rcut)**2
+        s2 = sigma**2
+        ercut = (s2/rc2)**6 - (s2/rc2)**3
     
         !$omp parallel do private(i,j,d2,q,rij) schedule(static,1) reduction(+:erg)
         do i=1,npart-1
@@ -54,8 +54,8 @@ function compute_poten(L, x) result(erg)
             rij = rij - L*int(2.0_dp*rij/L)
             d2 = dot_product(rij, rij)
             if (d2 .lt. rc2) then
-                q = (s2/d2)*(s2/d2)*(s2/d2)
-                erg = erg + (q*q - q - ercut)
+                q = (s2/d2)**3
+                erg = erg + (q**2 - q - ercut)
             end if
         end do
         end do
@@ -74,9 +74,9 @@ function erg_diff(i, L, x, xi_new) result(de)
     integer :: j
     real(dp) :: q, d2, s2, rc2, rij(3), ercut
     de = zero
-    rc2 = (sigma*rcut)**2.0_dp
-    s2 = sigma**2.0_dp
-    ercut = (s2/rc2)**6.0_dp - (s2/rc2)**3.0_dp    
+    rc2 = (sigma*rcut)**2
+    s2 = sigma**2
+    ercut = (s2/rc2)**6 - (s2/rc2)**3    
 
     !  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ! substract old interactions
@@ -89,8 +89,8 @@ function erg_diff(i, L, x, xi_new) result(de)
         rij = rij - L*int(2.0_dp*rij/L)
         d2 = dot_product(rij, rij)
         if (d2 .lt. rc2) then
-            q = (s2/d2)*(s2/d2)*(s2/d2)
-            de = de + (q - q*q + ercut)
+            q = (s2/d2)**3
+            de = de + (q - q**2 + ercut)
         end if
     end if
     end do
@@ -106,8 +106,8 @@ function erg_diff(i, L, x, xi_new) result(de)
         rij = rij - L*int(2.0_dp*rij/L)
         d2 = dot_product(rij, rij)
         if (d2 .lt. rc2) then
-            q = (s2/d2)*(s2/d2)*(s2/d2)
-            de = de + (q*q - q - ercut)
+            q = (s2/d2)**3
+            de = de + (q**2 - q - ercut)
         end if
     end if
     end do
