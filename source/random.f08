@@ -1,9 +1,36 @@
 module random
-use global, only: dp, int64
+use global, only: dp, int64, pi
 implicit none
 private
-public init_PRNG, randint, randpm
+public init_PRNG, randint, randn_matrix
 contains
+
+
+! generate a normal
+! using box muller
+function randn() result(x)
+    implicit none
+    real(dp) :: u(2), x
+
+    call random_number(u)
+    x = (-2.0_dp*log(u(1)))**0.5_dp*sin(2.0_dp*pi*u(2))
+    end function randn
+
+! generate a matrix of normals
+! using box muller
+function randn_matrix(m, n) result(mat)
+    implicit none
+    integer, intent(in) :: m, n
+    integer :: i, j
+    real(dp) :: mat(m,n)
+
+    do i=1,m
+    do j=1,n
+        mat(i,j) = randn()
+    end do
+    end do
+
+    end function randn_matrix
 
 ! generate a random integer
 ! from 0 to a (exclusive)

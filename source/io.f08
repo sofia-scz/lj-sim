@@ -2,25 +2,25 @@ module io
 use global, only: dp, int64
 implicit none
 private
-public readin, readsys, str_padding
+public mc_readin, md_readin, readsys
 contains
 
-! read config
-subroutine readin(seed, L0, temp, pres, xvar, vvar, burn, prod, snaps, inimode)
+! read MC config
+subroutine mc_readin(seed, L0, temp, press, xvar, vvar, burn, prod, snaps, inimode)
     integer, intent(out) :: burn, prod, snaps
     integer(int64), intent(out) :: seed
-    real(dp), intent(out) :: L0, temp, pres, xvar, vvar
+    real(dp), intent(out) :: L0, temp, press, xvar, vvar
     character(len=*), intent(out) :: inimode
     integer :: iostat
     
     ! set up namelists
-    namelist /input/ seed, L0, temp, pres, xvar, vvar, &
+    namelist /input/ seed, L0, temp, press, xvar, vvar, &
                        burn, prod, snaps, inimode
     seed = 123456789
     L0 = 10.0
     temp = 1.0
-    pres = 1.0
-    xvar = 0.02
+    press = 1.0
+    xvar = 0.005
     vvar = 0.005
     burn = 100
     prod = 100
@@ -35,24 +35,60 @@ subroutine readin(seed, L0, temp, pres, xvar, vvar, burn, prod, snaps, inimode)
 
     read(nml=input, unit=156, iostat=iostat)
     if (iostat .ne. 0) then
-    write(*,'(a60)') str_padding('Warning: input file reading may have failed. Please', 59)
-    write(*,'(a60)') str_padding('double check with the values printed below.', 59)
+    write(*,'(a45)') 'Warning: input file reading may have failed.'
+    write(*,'(a48)') 'Please double check the values printed below...'
     end if
 
     close(156)
 
-    end subroutine readin
+    end subroutine mc_readin
+
+! read MD config
+subroutine md_readin(seed, L0, dt, temp, press, gamma, steps, snaps, inimode)
+    integer, intent(out) :: steps, snaps
+    integer(int64), intent(out) :: seed
+    real(dp), intent(out) :: L0, dt, temp, press, gamma
+    character(len=*), intent(out) :: inimode
+    integer :: iostat
+    
+    ! set up namelists
+    namelist /input/ seed, L0, dt, temp, press, gamma, steps, snaps, inimode
+    seed = 123456789
+    L0 = 10.0
+    dt = 0.001
+    temp = 1.0
+    press = 1.0
+    gamma = 0.0
+    steps = 100
+    snaps = 30
+    inimode = 'random'
+
+    ! read
+    open(file='input.in', unit=156, iostat=iostat)
+    if (iostat .ne. 0) then
+    write(*,*) 'Warning: input file opening may have failed.'
+    end if
+
+    read(nml=input, unit=156, iostat=iostat)
+    if (iostat .ne. 0) then
+    write(*,'(a45)') 'Warning: input file reading may have failed.'
+    write(*,'(a48)') 'Please double check the values printed below...'
+    end if
+
+    close(156)
+
+    end subroutine md_readin
 
 ! read config
-subroutine readsys(nPart, mass, e0, sigma, rcut, asp)
-    integer, intent(out) :: nPart
+subroutine readsys(npart, mass, e0, sigma, rcut, asp)
+    integer, intent(out) :: npart
     real(dp), intent(out) :: mass, e0, sigma, rcut
     character(len=*), intent(out) :: asp
     integer :: iostat
     
     ! set up namelists
-    namelist /system/  nPart, mass, e0, sigma, rcut, asp
-    nPart = 10
+    namelist /system/  npart, mass, e0, sigma, rcut, asp
+    npart = 10
     mass = 1.0 
     e0 = 1.0
     sigma = 1.0
@@ -67,22 +103,12 @@ subroutine readsys(nPart, mass, e0, sigma, rcut, asp)
 
     read(nml=system, unit=156, iostat=iostat)
     if (iostat .ne. 0) then
-    write(*,'(a60)') str_padding('Warning: input file reading may have failed. Please', 59)
-    write(*,'(a60)') str_padding('double check with the values printed below.', 59)
+    write(*,'(a45)') 'Warning: input file reading may have failed.'
+    write(*,'(a48)') 'Please double check the values printed below...'
     end if
 
     close(156)
 
     end subroutine readsys
-
-
-function str_padding(str, n) result(padded_str)
-    integer, intent(in) :: n
-    character(len=*), intent(in) :: str
-    character(len=n) :: padded_str
-
-    padded_str = trim(str)
-
-    end function str_padding
 
 end module io

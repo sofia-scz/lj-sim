@@ -1,34 +1,29 @@
 module mcmc
-use global, only: dp, zero, kB, npart, xvar, vvar
+use global, only: dp, kB, npart, xvar, vvar
 use random, only: randint
-use potential, only: compute_poten, erg_diff
+use potential, only: get_poten, erg_diff
 implicit none
 private
 public NpT_step
 contains
 
-subroutine NpT_step(temp, pres, L, x, energy, xtry, vtry, xacc, vacc)
+subroutine NpT_step(temp, target_press, L, x, energy, xtry, vtry, xacc, vacc)
     implicit none
-    real(dp), intent(in) :: temp, pres
+    real(dp), intent(in) :: temp, target_press
     real(dp), intent(inout) :: L, x(npart,3), energy, &
                                 xtry, vtry, xacc, vacc
-    logical :: accept
-    integer :: i, ri
+    integer :: i, ri, accept
 
     do i=1,npart+1
         ri = randint(npart+1)
         if (ri.eq.0) then
             vtry = vtry + 1
-            call volstretch_move(temp, pres, L, x, energy, accept)
-            if (accept) then
-                vacc = vacc + 1
-            end if
+            call volstretch_move(temp, target_press, L, x, energy, accept)
+            vacc = vacc + accept
         else
             xtry = xtry + 1
             call displace_move(temp, L, x, energy, accept)
-            if (accept) then
-                xacc = xacc + 1
-            end if
+            xacc = xacc + accept
         end if
     end do
 
@@ -39,13 +34,13 @@ subroutine displace_move(temp, L, x, energy, accept)
     implicit none
     real(dp), intent(in) :: temp, L
     real(dp), intent(inout) :: x(npart,3), energy
-    logical, intent(out) :: accept
+    integer, intent(out) :: accept
     integer :: i, k
     real(dp) :: u, eold, enew, xi_old(3), xi_new(3), dx(3), beta
 
     eold = energy
     beta = 1.0_dp/(kB*temp)
-    accept = .false.
+    accept = 0
 
     ! select random particle
     i = randint(npart) + 1
@@ -60,7 +55,7 @@ subroutine displace_move(temp, L, x, energy, accept)
     
     ! fix particles escaping the box
     do k=1,3
-        if (xi_new(k) .lt. zero) then
+        if (xi_new(k) .lt. 0.0_dp) then
             xi_new(k) = xi_new(k) + L
         else if (xi_new(k) .ge. L) then
             xi_new(k) = xi_new(k) - L
@@ -75,22 +70,22 @@ subroutine displace_move(temp, L, x, energy, accept)
     if (u .lt. exp((eold-enew)*beta)) then
         energy = enew
         x(i,:) = xi_new
-        accept = .true.
+        accept = 1
     end if
 
     end subroutine displace_move
 
 ! attempt to stretch the whole simulation box
-subroutine volstretch_move(temp, pres, L, x, energy, accept)
+subroutine volstretch_move(temp, target_press, L, x, energy, accept)
     implicit none
-    real(dp), intent(in) :: temp, pres
+    real(dp), intent(in) :: temp, target_press
     real(dp), intent(inout) :: L, x(npart,3), energy
-    logical, intent(out) :: accept
+    integer, intent(out) :: accept
     real(dp) :: u, eold, enew, v0, vn, Ln, logv, beta
 
     eold = energy
     beta = 1.0_dp/(kB*temp)
-    accept = .false.
+    accept = 0
 
     ! volume perturbations
     v0 = L**3
@@ -100,15 +95,15 @@ subroutine volstretch_move(temp, pres, L, x, energy, accept)
     vn = exp(logv)
     Ln = vn**(1.0_dp/3.0_dp)
 
-    enew = compute_poten(Ln, x/L*Ln)
+    enew = get_poten(Ln, x/L*Ln)
     call random_number(u)
 
-    if (u .lt. exp(-beta*(enew - eold + pres*(vn-v0)) & 
+    if (u .lt. exp(-beta*(enew - eold + target_press*(vn-v0)) &
                         + npart*log(vn/v0))) then
         x = x/L*Ln
         L = Ln
         energy = enew
-        accept = .true.
+        accept = 1
     end if
 
     end subroutine volstretch_move
