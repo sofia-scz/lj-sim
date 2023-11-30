@@ -164,7 +164,7 @@ subroutine setup_vars()
     a = f/mass
     poterg = get_poten(L, x)
     kinerg = get_kinetic()
-    temp = 2.0_dp/(3.0_dp*kB)*kinerg
+    temp = get_temp(kinerg)
     end subroutine setup_vars
 
 ! write to table.out
@@ -175,8 +175,9 @@ subroutine write_table()
     poterg = get_poten(L, x)
     kinerg = get_kinetic()
     toterg = poterg + kinerg
-    temp = 2.0_dp/(3.0_dp*kB)*kinerg
-    press = get_press(temp, L, x)*evangs_to_bar
+    temp = get_temp(kinerg)
+    press = get_press2(temp)*evangs_to_bar
+!   press = get_press(temp, L, x)*evangs_to_bar
 
     ! write line
     write(236,'(e16.8,x,e16.8,x,e16.8,x,e16.8,x,e16.8)') &
@@ -211,8 +212,19 @@ function get_kinetic() result(kin)
     end function get_kinetic
 
 ! compute pressure
-function get_press2() result(pcalc)
+function get_temp(kin) result(tcalc)
     implicit none
+    real(dp), intent(in) :: kin
+    real(dp) :: tcalc
+
+    tcalc = 2.0_dp*kin/(3.0_dp*npart*kB)
+
+    end function get_temp
+
+! compute pressure
+function get_press2(temp_in) result(pcalc)
+    implicit none
+    real(dp), intent(in) :: temp_in
     real(dp) :: pcalc
     
     pcalc = 0.0d0
@@ -220,7 +232,7 @@ function get_press2() result(pcalc)
         pcalc = pcalc + dot_product(x(i,:),f(i,:))
     end do
 
-    pcalc = (pcalc/(3.0_dp*npart) + npart*temp*kB)/L**3
+    pcalc = (pcalc/(3.0_dp*npart) + npart*temp_in*kB)/L**3
 
     end function get_press2
 

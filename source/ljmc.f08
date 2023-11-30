@@ -11,7 +11,7 @@ use omp_lib
 implicit none
 
 real(dp), allocatable :: x(:,:)
-real(dp) :: L, temp, target_press, t0, tf, energy, & 
+real(dp) :: L, target_temp, target_press, t0, tf, energy, & 
             density, press, xtry, vtry, xacc, vacc
 integer :: i, n, burn, prod, snaps
 integer(int64) :: seed
@@ -41,7 +41,7 @@ write(*,*) 'Starting burn in...'
 call flush()
 
 do n=1,burn
-    call NpT_step(temp, target_press, L, x, energy, xtry, vtry, xacc, vacc)
+    call NpT_step(target_temp, target_press, L, x, energy, xtry, vtry, xacc, vacc)
 end do
 
 tf = omp_get_wtime()
@@ -60,7 +60,7 @@ write(236,'(a82)') 'Energy        BoxLength        Density        &
 open(unit=145, file='snapshots.out')
 
 do n=1,prod
-    call NpT_step(temp, target_press, L, x, energy, xtry, vtry, xacc, vacc)
+    call NpT_step(target_temp, target_press, L, x, energy, xtry, vtry, xacc, vacc)
     call write_table()
     ! write snapshots
     if (mod(n-mod(prod,int(prod/snaps)),int(prod/snaps)).eq.0) then
@@ -104,7 +104,7 @@ subroutine init()
 
     write(*,*)
     write(*,*) 'Reading input files...'
-    call mc_readin(seed, L, temp, target_press, xvar, vvar, burn, prod, snaps, inimode)
+    call mc_readin(seed, L, target_temp, target_press, xvar, vvar, burn, prod, snaps, inimode)
     call readsys(npart, mass, e0, sigma, rcut, asp)
     write(*,*) 'Done.'
 
@@ -126,7 +126,7 @@ subroutine init()
     write(*,*)
     write(*,'(a23,7x,i20)') 'PRNG initializing seed', seed
     write(*,'(a26,12x,f12.6)') 'Initial box length (angs)', L
-    write(*,'(a28,10x,f12.6)') 'Target Temperature (kelvin)', temp
+    write(*,'(a28,10x,f12.6)') 'Target Temperature (kelvin)', target_temp
     write(*,'(a22,16x,f12.6)') 'Target Pressure (bar)', target_press
     write(*,*)
     write(number,'(g9.3)') xvar*100
@@ -187,7 +187,7 @@ subroutine write_table()
 
     ! compute
     density = npart*mass/L**3*amuangs_to_kglt
-    press = get_press(temp, L, x)*evangs_to_bar
+    press = get_press(target_temp, L, x)*evangs_to_bar
 
     ! write line
     write(236,'(e16.8,x,e16.8,x,e16.8,x,e16.8,x,f10.6,x,f10.6)') &
