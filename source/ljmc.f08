@@ -93,7 +93,7 @@ subroutine init()
     ! start writing output
     write(*,*)
     write(*,*) '-------------------------------------------------------------'
-    write(*,*) '| Welcome to my LJ fluid MCMC simulation!!                  |'
+    write(*,*) '| Welcome to my Lennard Jones molecular simulation!!        |'
     write(*,*) '|                                                           |'
     write(*,*) '| This program was written by C. Dacal and S. Scozziero for |'
     write(*,*) '| the course "Introduccion a la Simulacion Computacional"   |'
@@ -107,6 +107,9 @@ subroutine init()
     call mc_readin(seed, L, target_temp, target_press, xvar, vvar, burn, prod, snaps, inimode)
     call readsys(npart, mass, e0, sigma, rcut, asp)
     write(*,*) 'Done.'
+
+    write(*,*)
+    write(*,*) 'Selected simulation: NpT Monte Carlo'
 
     write(*,*)
     write(*,*) 'Printing input values...'

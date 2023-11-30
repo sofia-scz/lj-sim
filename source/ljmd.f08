@@ -78,7 +78,7 @@ subroutine init()
     ! start writing output
     write(*,*)
     write(*,*) '-------------------------------------------------------------'
-    write(*,*) '| Welcome to my LJ fluid MD simulation!!                    |'
+    write(*,*) '| Welcome to my Lennard Jones molecular simulation!!        |'
     write(*,*) '|                                                           |'
     write(*,*) '| This program was written by C. Dacal and S. Scozziero for |'
     write(*,*) '| the course "Introduccion a la Simulacion Computacional"   |'
@@ -94,13 +94,16 @@ subroutine init()
     write(*,*) 'Done.'
 
     write(*,*)
+    write(*,*) 'Selected simulation: NVT Dynamics'
+
+    write(*,*)
     write(*,*) 'Printing input values...'
 
     ! ~~~~~~~~~~~ simulation params ~~~~~~~~~~~~~~~~~~~
     write(*,*)
     write(*,*) 'Simulation parameters:'
     write(*,'(a20,18x,i4,a8)') 'OpenMP running with', omp_get_max_threads(), 'threads'
-    write(*,'(a23,16x,f8.3,a3)') 'Estimated memory usage', 3*npart/1024.0**2*1.2, 'MB'
+    write(*,'(a23,16x,f8.3,a3)') 'Estimated memory usage', 3*npart*4/1024.0**2*1.2, 'MB'
     write(*,*)
     write(*,'(a15,31x,a4)') 'Atomic species', asp
     write(*,'(a18,20x,f12.4)') 'Atomic mass (amu)', mass
@@ -176,15 +179,14 @@ subroutine write_table()
     kinerg = get_kinetic()
     toterg = poterg + kinerg
     temp = get_temp(kinerg)
-    press = get_press2(temp)*evangs_to_bar
-!   press = get_press(temp, L, x)*evangs_to_bar
+    press = get_press(temp, L, x)*evangs_to_bar
 
     ! write line
     write(236,'(e16.8,x,e16.8,x,e16.8,x,e16.8,x,e16.8)') &
         toterg, poterg, kinerg, temp, press
     end subroutine write_table
 
-! write write_snapshot
+! write snapshot
 subroutine write_snap()
     implicit none
 
@@ -211,7 +213,7 @@ function get_kinetic() result(kin)
     kin = 0.5_dp*mass*kin
     end function get_kinetic
 
-! compute pressure
+! compute temperature
 function get_temp(kin) result(tcalc)
     implicit none
     real(dp), intent(in) :: kin
@@ -220,20 +222,5 @@ function get_temp(kin) result(tcalc)
     tcalc = 2.0_dp*kin/(3.0_dp*npart*kB)
 
     end function get_temp
-
-! compute pressure
-function get_press2(temp_in) result(pcalc)
-    implicit none
-    real(dp), intent(in) :: temp_in
-    real(dp) :: pcalc
-    
-    pcalc = 0.0d0
-    do i=1,npart
-        pcalc = pcalc + dot_product(x(i,:),f(i,:))
-    end do
-
-    pcalc = (pcalc/(3.0_dp*npart) + npart*temp_in*kB)/L**3
-
-    end function get_press2
 
 end program ljmd
