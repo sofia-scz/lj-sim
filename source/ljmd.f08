@@ -94,9 +94,6 @@ subroutine init()
     write(*,*) 'Done.'
 
     write(*,*)
-    write(*,*) 'Selected simulation: NVT Dynamics'
-
-    write(*,*)
     write(*,*) 'Printing input values...'
 
     ! ~~~~~~~~~~~ simulation params ~~~~~~~~~~~~~~~~~~~
@@ -192,8 +189,10 @@ subroutine write_snap()
 
     ! header
     write(145,*) npart
-    write(145,'(a10,f7.3,a13,f7.3,a13,f7.3,a13)') 'Lattice="', L, &
-            ' 0.0 0.0 0.0 ', L, ' 0.0 0.0 0.0 ', L, '" pbc="T T T"'
+    write(145,'(a54,a10,f7.3,a13,f7.3,a13,f7.3,a13)') &
+            'Properties=species:S:1:pos:R:3:momenta:R:3:forces:R:3 ', &
+            'Lattice="', L, ' 0.0 0.0 0.0 ', L, ' 0.0 0.0 0.0 ', L, &
+            '" pbc="T T T"'
 
     ! particles
     do i=1,npart

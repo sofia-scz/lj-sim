@@ -109,9 +109,6 @@ subroutine init()
     write(*,*) 'Done.'
 
     write(*,*)
-    write(*,*) 'Selected simulation: NpT Monte Carlo'
-
-    write(*,*)
     write(*,*) 'Printing input values...'
 
     ! ~~~~~~~~~~~ simulation params ~~~~~~~~~~~~~~~~~~~

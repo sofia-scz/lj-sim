@@ -29,7 +29,7 @@ subroutine langevin(dt, L, temp, y, x, v, a, f)
     x = x + dt*v
     x = modulo(x,L)
     f = get_force(L, x)
-    a = f/mass - y*v + (2.0_dp*y*kB*temp/mass)**0.5_dp*randn_matrix(npart,3)
+    a = f/mass - y*v + (2.0_dp*y*kB*temp/(mass*dt))**0.5_dp*randn_matrix(npart,3)
     v = v + (0.5_dp*dt)*a
 
     end subroutine langevin

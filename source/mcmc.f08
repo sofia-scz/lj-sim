@@ -7,9 +7,28 @@ private
 public NpT_step
 contains
 
-subroutine NpT_step(temp, target_press, L, x, energy, xtry, vtry, xacc, vacc)
+! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!                       NVT step
+subroutine NVT_step(target_temp, L, x, energy, xtry, xacc)
     implicit none
-    real(dp), intent(in) :: temp, target_press
+    real(dp), intent(in) :: target_temp
+    real(dp), intent(inout) :: L, x(npart,3), energy, &
+                                xtry, xacc
+    integer :: i, accept
+
+    do i=1,npart+1
+        xtry = xtry + 1
+        call displace_move(target_temp, L, x, energy, accept)
+        xacc = xacc + accept
+    end do
+
+    end subroutine NVT_step
+
+! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!                       NpT step
+subroutine NpT_step(target_temp, target_press, L, x, energy, xtry, vtry, xacc, vacc)
+    implicit none
+    real(dp), intent(in) :: target_temp, target_press
     real(dp), intent(inout) :: L, x(npart,3), energy, &
                                 xtry, vtry, xacc, vacc
     integer :: i, ri, accept
@@ -18,16 +37,21 @@ subroutine NpT_step(temp, target_press, L, x, energy, xtry, vtry, xacc, vacc)
         ri = randint(npart+1)
         if (ri.eq.0) then
             vtry = vtry + 1
-            call volstretch_move(temp, target_press, L, x, energy, accept)
+            call volstretch_move(target_temp, target_press, L, x, energy, accept)
             vacc = vacc + accept
         else
             xtry = xtry + 1
-            call displace_move(temp, L, x, energy, accept)
+            call displace_move(target_temp, L, x, energy, accept)
             xacc = xacc + accept
         end if
     end do
 
     end subroutine NpT_step
+
+
+! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!                           moves
+! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ! attempt to displace 1 particle
 subroutine displace_move(temp, L, x, energy, accept)
