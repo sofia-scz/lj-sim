@@ -63,7 +63,7 @@ do n=1,prod
     call NpT_step(target_temp, target_press, L, x, energy, xtry, vtry, xacc, vacc)
     call write_table()
     ! write snapshots
-    if (mod(n-mod(prod,snaps),snaps).eq.0) then
+    if (mod(n-mod(prod,int(prod/snaps)),int(prod/snaps)).eq.0) then
         call write_snap()
         call flush()
     end if
