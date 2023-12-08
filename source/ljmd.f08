@@ -13,10 +13,9 @@ implicit none
 real(dp), allocatable :: x(:,:), v(:,:), a(:,:), f(:,:)
 real(dp) :: L, dt, temp, press, target_temp, target_press, gamma, &
             toterg, poterg, kinerg, t0, tf
-integer :: i, n, steps, snaps
+integer :: i, n, relax, steps, snaps
 integer(int64) :: seed
 character(len=2) :: asp, dummy
-character(len=9) :: number
 character(len=10) :: inimode
 character(len=14) :: fpos='positions.in'
 
@@ -38,6 +37,11 @@ call flush()
 
 t0 = omp_get_wtime()
 
+do n=1,relax
+    v = 0
+    call langevin(dt, L, target_temp, gamma, x, v, a, f)
+end do
+
 ! open data dump files
 open(file='table.out', unit=236)
 write(236,'(a81)') 'Energy          Potential         Kinetic        &
@@ -48,7 +52,7 @@ do n=1,steps
     call langevin(dt, L, target_temp, gamma, x, v, a, f)
     call write_table()
     ! write snapshots
-    if (mod(n-mod(steps,int(steps/snaps)),int(steps/snaps)).eq.0) then
+    if (mod(n-mod(steps,snaps),snaps).eq.0) then
         call write_snap()
         call flush()
     end if
@@ -89,7 +93,7 @@ subroutine init()
 
     write(*,*)
     write(*,*) 'Reading input files...'
-    call md_readin(seed, L, dt, target_temp, target_press, gamma, steps, snaps, inimode)
+    call md_readin(seed, L, dt, target_temp, target_press, gamma, relax, steps, snaps, inimode)
     call readsys(npart, mass, e0, sigma, rcut, asp)
     write(*,*) 'Done.'
 
@@ -118,8 +122,8 @@ subroutine init()
     write(*,*)
     write(*,'(a15,23x,f12.2)') 'Time step (fs)', dt
     write(*,'(a9,29x,i12)') 'MD steps', steps
-    write(number,'(i6)') snaps
-    write(*,*) 'Saving ' // trim(number) // ' snapshots'
+    write(*,*) 'Saving snapshots every', snaps, 'steps'
+    write(*,*)
     write(*,*)
 
     end subroutine init
@@ -179,7 +183,7 @@ subroutine write_table()
     press = get_press(temp, L, x)*evangs_to_bar
 
     ! write line
-    write(236,'(e16.8,x,e16.8,x,e16.8,x,e16.8,x,e16.8)') &
+    write(236,'(e20.12,x,e20.12,x,e20.12,x,e20.12,x,e20.12)') &
         toterg, poterg, kinerg, temp, press
     end subroutine write_table
 

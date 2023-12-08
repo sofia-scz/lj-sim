@@ -63,7 +63,7 @@ do n=1,prod
     call NpT_step(target_temp, target_press, L, x, energy, xtry, vtry, xacc, vacc)
     call write_table()
     ! write snapshots
-    if (mod(n-mod(prod,int(prod/snaps)),int(prod/snaps)).eq.0) then
+    if (mod(n-mod(prod,snaps),snaps).eq.0) then
         call write_snap()
         call flush()
     end if
@@ -135,8 +135,7 @@ subroutine init()
     write(*,*) 'Max Volume Stretch (% of box volume)        ' // number
     write(*,'(a19,19x,i12)') 'MCMC burn in steps', burn
     write(*,'(a22,16x,i12)') 'MCMC production steps', prod
-    write(number,'(i6)') snaps
-    write(*,*) 'Saving ' // trim(number) // ' snapshots'
+    write(*,*) 'Saving snapshots every', snaps, 'steps'
     write(*,*)
 
     end subroutine init
@@ -190,7 +189,7 @@ subroutine write_table()
     press = get_press(target_temp, L, x)*evangs_to_bar
 
     ! write line
-    write(236,'(e16.8,x,e16.8,x,e16.8,x,e16.8,x,f10.6,x,f10.6)') &
+    write(236,'(e20.12,x,e20.12,x,e20.12,x,e20.12,x,f10.6,x,f10.6)') &
         energy/npart*1000, L, density, press, xacc/xtry, vacc/vtry
     end subroutine write_table
 
